@@ -6,7 +6,6 @@ import { useSiteContent } from '@/lib/siteContent';
 const LINKS = [
   { label: 'Home', href: '#home', key: 'nav_home' },
   { label: 'About', href: '#about', key: 'nav_about' },
-  { label: 'Skills', href: '#skills', key: 'nav_skills' },
   { label: 'Projects', href: '#projects', key: 'nav_projects' },
   { label: 'Services', href: '#services', key: 'nav_services' },
   { label: 'Contact', href: '#contact', key: 'nav_contact' },
