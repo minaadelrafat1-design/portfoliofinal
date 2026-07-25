@@ -15,10 +15,6 @@ const GROUPS: { label: string; keys: string[] }[] = [
     keys: ['about_title', 'about_subtitle', 'about_summary'],
   },
   {
-    label: 'Skills Section',
-    keys: ['skills_title', 'skills_subtitle'],
-  },
-  {
     label: 'Projects Section',
     keys: ['projects_title', 'projects_subtitle'],
   },
@@ -32,7 +28,7 @@ const GROUPS: { label: string; keys: string[] }[] = [
   },
   {
     label: 'Navigation & Footer',
-    keys: ['nav_home', 'nav_about', 'nav_skills', 'nav_projects', 'nav_services', 'nav_contact', 'footer_rights'],
+    keys: ['nav_home', 'nav_about', 'nav_projects', 'nav_services', 'nav_contact', 'footer_rights'],
   },
 ];
 

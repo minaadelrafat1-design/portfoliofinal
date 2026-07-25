@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import { FolderGit2, Mail, Sparkles, Briefcase, Eye, ShoppingBag } from 'lucide-react';
-import { fetchAllProjects, fetchMessages, fetchSkills, fetchServices, fetchOrders } from '@/lib/api';
+import { FolderGit2, Mail, Briefcase, Eye, ShoppingBag } from 'lucide-react';
+import { fetchAllProjects, fetchMessages, fetchServices, fetchOrders } from '@/lib/api';
 import type { AdminTab } from '@/components/admin/AdminLayout';
 
 export function AdminOverview({ onNavigate }: { onNavigate: (t: AdminTab) => void }) {
-  const [stats, setStats] = useState({ projects: 0, published: 0, messages: 0, unread: 0, skills: 0, services: 0, orders: 0, unreadOrders: 0 });
+  const [stats, setStats] = useState({ projects: 0, published: 0, messages: 0, unread: 0, services: 0, orders: 0, unreadOrders: 0 });
 
   useEffect(() => {
     (async () => {
-      const [p, m, s, sv, o] = await Promise.all([
+      const [p, m, sv, o] = await Promise.all([
         fetchAllProjects().catch(() => []),
         fetchMessages().catch(() => []),
-        fetchSkills().catch(() => []),
         fetchServices().catch(() => []),
         fetchOrders().catch(() => []),
       ]);
@@ -20,7 +19,6 @@ export function AdminOverview({ onNavigate }: { onNavigate: (t: AdminTab) => voi
         published: p.filter((x) => x.is_published).length,
         messages: m.length,
         unread: m.filter((x) => !x.is_read).length,
-        skills: s.length,
         services: sv.length,
         orders: o.length,
         unreadOrders: o.filter((x) => !x.is_read).length,
@@ -32,7 +30,6 @@ export function AdminOverview({ onNavigate }: { onNavigate: (t: AdminTab) => voi
     { label: 'Total Projects', value: stats.projects, sub: `${stats.published} published`, icon: FolderGit2, tab: 'projects' as AdminTab },
     { label: 'Messages', value: stats.messages, sub: `${stats.unread} unread`, icon: Mail, tab: 'messages' as AdminTab },
     { label: 'Orders', value: stats.orders, sub: `${stats.unreadOrders} new`, icon: ShoppingBag, tab: 'orders' as AdminTab },
-    { label: 'Skills', value: stats.skills, icon: Sparkles, tab: 'skills' as AdminTab },
     { label: 'Services', value: stats.services, icon: Briefcase, tab: 'services' as AdminTab },
   ];
 

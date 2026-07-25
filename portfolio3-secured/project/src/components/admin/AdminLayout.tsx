@@ -1,18 +1,17 @@
 import { useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, FolderGit2, User, Sparkles, Briefcase, Mail, Settings as SettingsIcon,
+  LayoutDashboard, FolderGit2, User, Briefcase, Mail, Settings as SettingsIcon,
   LogOut, Menu, X, ExternalLink, ShoppingBag, FileText,
 } from 'lucide-react';
 import { useAdminAuth } from '@/lib/adminAuth';
 
-export type AdminTab = 'overview' | 'projects' | 'profile' | 'skills' | 'services' | 'messages' | 'orders' | 'content' | 'settings';
+export type AdminTab = 'overview' | 'projects' | 'profile' | 'services' | 'messages' | 'orders' | 'content' | 'settings';
 
 const NAV: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'projects', label: 'Projects', icon: FolderGit2 },
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'skills', label: 'Skills', icon: Sparkles },
   { id: 'services', label: 'Services', icon: Briefcase },
   { id: 'content', label: 'Site Content', icon: FileText },
   { id: 'messages', label: 'Messages', icon: Mail },

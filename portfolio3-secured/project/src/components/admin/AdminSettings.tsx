@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Save, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { Save, CheckCircle2, Sun, Moon, KeyRound } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { fetchSettings } from '@/lib/api';
 import { useSettings } from '@/lib/settings';
@@ -14,9 +14,52 @@ export function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [pwError, setPwError] = useState('');
+
   useEffect(() => {
     (async () => setSettings(await fetchSettings()))();
   }, []);
+
+  const changePassword = async () => {
+    setPwError('');
+    setPwSuccess(false);
+
+    if (newPassword.length < 8) {
+      setPwError('New password must be at least 8 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('New password and confirmation do not match.');
+      return;
+    }
+
+    setPwSaving(true);
+    const { data, error } = await supabase.rpc('change_admin_password', {
+      p_current: currentPassword,
+      p_new: newPassword,
+    });
+    setPwSaving(false);
+
+    if (error) {
+      setPwError(error.message || 'Could not change password. Please try again.');
+      return;
+    }
+    if (!data) {
+      setPwError('Current password is incorrect.');
+      return;
+    }
+
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setPwSuccess(true);
+    setTimeout(() => setPwSuccess(false), 3000);
+  };
 
   const set = (k: keyof Settings, v: string) => {
     const updated = settings ? { ...settings, [k]: v } : settings;
@@ -103,6 +146,57 @@ export function AdminSettings() {
                 {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <h2 className="mb-4 flex items-center gap-2 font-heading font-semibold">
+            <KeyRound size={18} /> Admin Password
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm text-slate-300">Current password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className={inputCls}
+                autoComplete="current-password"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-slate-300">New password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className={inputCls}
+                autoComplete="new-password"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-slate-300">Confirm new password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={inputCls}
+                autoComplete="new-password"
+              />
+            </div>
+            {pwError && <p className="text-sm text-red-400">{pwError}</p>}
+            {pwSuccess && (
+              <p className="inline-flex items-center gap-1.5 text-sm text-green-400">
+                <CheckCircle2 size={16} /> Password updated
+              </p>
+            )}
+            <button
+              onClick={changePassword}
+              disabled={pwSaving || !currentPassword || !newPassword || !confirmPassword}
+              className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-60"
+            >
+              {pwSaving ? 'Updating...' : 'Update password'}
+            </button>
           </div>
         </div>
 
