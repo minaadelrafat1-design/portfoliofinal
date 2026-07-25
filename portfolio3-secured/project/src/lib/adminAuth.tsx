@@ -1,41 +1,15 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { supabase } from './supabase';
 
 const STORAGE_KEY = 'portfolio_admin_session';
-const ATTEMPTS_KEY = 'portfolio_admin_attempts';
-const ENV_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD as string | undefined;
-
-// Basic brute-force throttling (client-side defense in depth only — see
-// README / security notes for why this cannot be a substitute for real
-// server-side authentication).
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS = 60_000;
 
 interface AdminAuthState {
   isUnlocked: boolean;
-  unlock: (password: string) => boolean;
+  unlock: (password: string) => Promise<boolean>;
   lock: () => void;
 }
 
 const AdminAuthContext = createContext<AdminAuthState | undefined>(undefined);
-
-function readAttempts(): { count: number; lockedUntil: number } {
-  try {
-    const raw = sessionStorage.getItem(ATTEMPTS_KEY);
-    if (!raw) return { count: 0, lockedUntil: 0 };
-    const parsed = JSON.parse(raw);
-    return { count: Number(parsed.count) || 0, lockedUntil: Number(parsed.lockedUntil) || 0 };
-  } catch {
-    return { count: 0, lockedUntil: 0 };
-  }
-}
-
-function writeAttempts(state: { count: number; lockedUntil: number }) {
-  try {
-    sessionStorage.setItem(ATTEMPTS_KEY, JSON.stringify(state));
-  } catch {
-    // ignore
-  }
-}
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
@@ -46,29 +20,25 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const unlock = useCallback((password: string): boolean => {
-    // Fail closed: if no admin password has been configured, never allow
-    // access rather than silently falling back to a known default.
-    if (!ENV_PASSWORD) return false;
+  // The password itself is never sent to or stored by the client — only the
+  // result of the check. Verification (including hashing and lockout after
+  // repeated failures) happens server-side in Postgres via the
+  // verify_admin_password() function, so the real password never ships in
+  // the built JS bundle.
+  const unlock = useCallback(async (password: string): Promise<boolean> => {
+    const { data, error } = await supabase.rpc('verify_admin_password', {
+      p_password: password,
+    });
 
-    const attempts = readAttempts();
-    if (attempts.lockedUntil > Date.now()) return false;
+    if (error || !data) return false;
 
-    if (password && password === ENV_PASSWORD) {
-      writeAttempts({ count: 0, lockedUntil: 0 });
-      setIsUnlocked(true);
-      try {
-        sessionStorage.setItem(STORAGE_KEY, '1');
-      } catch {
-        // ignore
-      }
-      return true;
+    setIsUnlocked(true);
+    try {
+      sessionStorage.setItem(STORAGE_KEY, '1');
+    } catch {
+      // ignore
     }
-
-    const count = attempts.count + 1;
-    const lockedUntil = count >= MAX_ATTEMPTS ? Date.now() + LOCKOUT_MS : 0;
-    writeAttempts({ count: lockedUntil ? 0 : count, lockedUntil });
-    return false;
+    return true;
   }, []);
 
   const lock = useCallback(() => {

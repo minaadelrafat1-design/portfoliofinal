@@ -1,18 +1,9 @@
 import { supabase, STORAGE_BUCKET } from './supabase';
-import type { Profile, Skill, Service, Project, ContactMessage, Settings, Order, SiteContentMap } from './types';
+import type { Profile, Service, Project, ContactMessage, Settings, Order, SiteContentMap } from './types';
 
 export async function fetchProfile(): Promise<Profile | null> {
   const { data } = await supabase.from('profile').select('*').maybeSingle();
   return data as Profile | null;
-}
-
-export async function fetchSkills(): Promise<Skill[]> {
-  const { data, error } = await supabase
-    .from('skills')
-    .select('*')
-    .order('sort_order', { ascending: true });
-  if (error) throw error;
-  return data as Skill[];
 }
 
 export async function fetchServices(): Promise<Service[]> {

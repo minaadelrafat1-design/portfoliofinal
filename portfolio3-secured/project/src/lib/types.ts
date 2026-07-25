@@ -15,16 +15,6 @@ export interface Profile {
   updated_at: string;
 }
 
-export interface Skill {
-  id: string;
-  name: string;
-  icon: string | null;
-  percentage: number;
-  category: string;
-  sort_order: number;
-  created_at: string;
-}
-
 export interface Service {
   id: string;
   icon: string | null;
@@ -91,19 +81,4 @@ export interface SiteContent {
 
 export type SiteContentMap = Record<string, string>;
 
-export type SkillCategory =
-  | 'Frontend'
-  | 'Backend'
-  | 'UI/UX'
-  | 'Databases'
-  | 'AI Tools'
-  | 'Deployment';
 
-export const SKILL_CATEGORIES: SkillCategory[] = [
-  'Frontend',
-  'Backend',
-  'UI/UX',
-  'Databases',
-  'AI Tools',
-  'Deployment',
-];
